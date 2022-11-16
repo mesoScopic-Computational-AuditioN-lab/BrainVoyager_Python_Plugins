@@ -14,5 +14,6 @@ List of available functions:
 
 -------------------------------------------------------------------
 
-Windows users: `bvbabel` isnt always playing ball when intalling within a conda environment, a solution is to manually copy paste the bvbabel directory somewhere and within the scripts (before `import bvbabel`) add `import sys` & `sys.path.append('C:/path/to/parentdirectory/ofbvbabel')`.
+Windows users: 
+`bvbabel` isnt always playing ball when intalling within a conda environment, a solution is to manually copy paste the bvbabel directory somewhere and within the scripts (before `import bvbabel`) add `import sys` & `sys.path.append('C:/path/to/parentdirectory/ofbvbabel')`.
 When using this approach, please remove the last two lines of code from the `__init__.py` file within the bvbabel folder (starting from `import pkg_resources`).
