@@ -19,6 +19,7 @@ import numpy as np
 
 from os.path import join
 import matplotlib.pyplot as plt
+from scipy import ndimage
 
 ## MAIN SELLECTION FUNCTIONS
 def runall(): 
@@ -81,7 +82,7 @@ def padarray(A, size):
     """add padding / transform to some new framing cube dimension"""
 
     # check if demensions are odd or even
-    if np.any([x % 2 for x in A.shape]):
+    if np.any([x % 2 for x in A.shape[-3:]]):
         bv.print_to_log("WARNING: DIMENSIONS ARE FOUND TO BE ODD NUMBERED... PLEASE CHECK IF RESULTS MATCH BV NATIVE APPROACH")
         raise Exception("Odd numbered input not supported") 
 
@@ -111,7 +112,7 @@ def apply_affine(A, target_affine):
     bv.print_to_log(f'\nApplying affine transformation:\n{target_affine}')
     if A.ndim == 3: 
         Anew = ndimage.affine_transform(A, target_affine, order=0)
-    elif A.ndim ==4: 
+    elif A.ndim == 4: 
         Anew = np.empty(A.shape)
         for i in range(A.shape[0]):
             Anew[i,:] = ndimage.affine_transform(A[i,:], target_affine, order=0)
