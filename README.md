@@ -11,6 +11,7 @@ List of available functions:
 + `Nifti_Tools.py` : Tool to convert most BrainVoyager file formates to and from NIFTI format (and setting space to correct nifti convention).
 + `VOI_Tools.py` : Tool to take BrainVoyager VOI files, and save namings/color values to ITKsnap and 3Dslicer readable file formats.
 + `VTC_BOX.py`: Tool to quickly load the header information from a .vtc file, and draw a nifti bounding box based on it (usefull for manual segmenation - to see the bounds of your functional data).
++ `VMP_Cortical_depth.py`: Tool to sample VMP files in precreated cortical depths, outputting SMP files per depth per hemisphere.
 
 -------------------------------------------------------------------
 
