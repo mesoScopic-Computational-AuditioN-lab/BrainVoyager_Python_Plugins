@@ -33,8 +33,11 @@ def run_samp():
         vmr_fn = f'{vmr_pf}_{hemisphere}.vmr'
         
         # sample depths
-        sample_depths(curdir, vmr_fn, vmp_fn, srf_fn, hemisphere, 
+        map_fns = sample_depths(curdir, vmr_fn, vmp_fn, srf_fn, hemisphere, 
                     interpolation_method, sample_only_nonzero_values)
+        
+        # combine smp maps if wanted
+        if buttons['COMBSMPS_bool'].isChecked(): combine_smps(map_fns)
 
     if buttons['RH_bool'].isChecked():
         hemisphere = 'RH'
@@ -42,8 +45,11 @@ def run_samp():
         vmr_fn = f'{vmr_pf}_{hemisphere}.vmr'
         
         # sample depths
-        sample_depths(curdir, vmr_fn, vmp_fn, srf_fn, hemisphere, 
+        map_fns = sample_depths(curdir, vmr_fn, vmp_fn, srf_fn, hemisphere, 
                     interpolation_method, sample_only_nonzero_values)
+        
+        # combine smp maps if wanted
+        if buttons['COMBSMPS_bool'].isChecked(): combine_smps(map_fns)
  
     return
 
@@ -71,6 +77,7 @@ def sample_depths(dir_folder, vmr_fn, vmp_fn, srf_fn, hemisphere,
     bv.print_to_log(f'Sampling VMPs in Depths ({len(fns)} depths found) \n -Filenames that follow stated naming convention: {fns}\n -Sampling: {vmp_fn}')
 
     # loop over depth meshes
+    map_fns = []
     for depth_mesh in fns:    
 
         # load srf
@@ -91,8 +98,54 @@ def sample_depths(dir_folder, vmr_fn, vmp_fn, srf_fn, hemisphere,
         # create the surface maps in depth
         mesh = doc.current_mesh
         mesh.create_map_from_volume_map(interpolation_method, sample_only_nonzero_values)
-        mesh.save_maps(join(dir_folder, smp_fn_depth))
+        map_fn = join(dir_folder, smp_fn_depth)
+        mesh.save_maps(map_fn)
+        map_fns.append(map_fn)
+    return map_fns
+
+def combine_smps(map_fns):
+    """function to combine smp maps into one smp file"""
+
+    import bvbabel 
+
+    # predefine
+    totalnr_maps = 0
+    all_maps = []
+    all_data = []
+
+    # loop over fns
+    for fn in map_fns:
+
+        # load bv smp file
+        head, data_smp = bvbabel.smp.read_smp(fn)
     
+        # append new number of maps
+        totalnr_maps += head['Nr maps']
+    
+        # capture suffix and add to header
+        mesh_map_prefix = re.search(r'(D(?!.*_D)[^W]*)(?=\.smp)', fn)[0] 
+        for i in range(len(head['Map'])):
+            head['Map'][i]['Name'] = f"{head['Map'][i]['Name']}_{mesh_map_prefix}"
+    
+        # append
+        all_maps.extend(head['Map'])
+        all_data.append(data_smp)
+
+    # make copy for saving and appending to
+    newhead = head.copy()
+    # update number of maps
+    newhead['Nr maps'] = totalnr_maps
+    newhead['Map'] = all_maps
+
+    # update new data
+    newdata_smp = np.concatenate(all_data, axis=1)
+
+    # update filename
+    new_fn = re.search(r"^(.*?)_D-", map_fns[0]).group(1)
+    new_fn = f'{new_fn}_comb.smp'
+
+    # save
+    bvbabel.smp.write_smp(new_fn, newhead, newdata_smp)
 
 ## ------------------------------------------------------------------------------ ##
 
@@ -186,6 +239,9 @@ gridLayout.addWidget(buttons['RH_bool'], 10, 1, 1, 1)
 buttons['NONZERO_bool'] = QCheckBox(window)
 buttons['NONZERO_bool'].setObjectName(u"NONZERO_bool")
 gridLayout.addWidget(buttons['NONZERO_bool'], 14, 0, 1, 1)
+buttons['COMBSMPS_bool'] = QCheckBox(window)
+buttons['COMBSMPS_bool'].setObjectName(u"COMBSMPS_bool")
+gridLayout.addWidget(buttons['COMBSMPS_bool'], 15, 0, 1, 1)
 
 # misc xyz for voi
 buttons['im'] = QSpinBox(window)
@@ -197,10 +253,10 @@ gridLayout.addWidget(buttons['im'], 13, 1, 1, 1)
 # button settings
 buttongo = QPushButton(window)
 buttongo.setObjectName(u"buttongo")
-gridLayout.addWidget(buttongo, 15, 0, 1, 2)
+gridLayout.addWidget(buttongo, 16, 0, 1, 2)
 help_but = QPushButton(window)
 help_but.setObjectName(u"help_but")
-gridLayout.addWidget(help_but, 15, 2, 1, 1)
+gridLayout.addWidget(help_but, 16, 2, 1, 1)
 
 # automatically check based on loaded file
 try: boolz[vmrfn[-3:]].setChecked(True)
@@ -226,10 +282,11 @@ srf_inf.setText(u"SRF Prefix")
 vmp_inf.setText(u"VMP Filename")
 dir_inf.setText(u"Directory Path")
 hem_inf.setText(u"Hemisphere")
-im_inf.setText(u"   Interpolation Method")
+im_inf.setText(u"     Interpolation Method")
 buttons['LH_bool'].setText(u"Left")
 buttons['RH_bool'].setText(u"Right")
 buttons['NONZERO_bool'].setText(u"Sample only nonzero")
+buttons['COMBSMPS_bool'].setText(u"Save combined SMP file")
 buttongo.setText(u"Sample Depths")
 help_but.setText(u"Help")
 
@@ -250,7 +307,7 @@ msg.setText("""Tool to take BrainVoyager VMP files and sample them within the co
 Input: Directory path (main working directory of files), VMR Prefix (prefix of VMR - used for linking), 
 VMP Prefix (prefix of VMP to sample in depths), SRF Prefix (optional: prefix of SRF file).
 
-Options of which hemisphere(s) to sample in, interpolation method (0: nearest, 1: trilinear), sample only nonzero (bool).
+Options of which hemisphere(s) to sample in, interpolation method (0: nearest, 1: trilinear), sample only nonzero (bool), and saving of combined file (bool).
 
 See example of use below:""")
 
@@ -266,8 +323,8 @@ e.g. Betas/PRF.vmp - will look in subdirectory Betas for a PRF.vmp file
 
 If both hemispheres are sellected, the program will loop and sample for both.
 Interpolation method is set to trilinear by default, but can be changed to nearest by setting it to 0.
-Additionally one can choose to sample only nonzero values instead.""")
-
+Additionally one can choose to sample only nonzero values instead.
+Save combined SMP file will save a combined SMP file for the given hemisphere (required bvbabel).""")
 
 window.setLayout(gridLayout)
 window.show()
