@@ -12,6 +12,7 @@ List of available functions:
 + `VOI_Tools.py` : Tool to take BrainVoyager VOI files, and save namings/color values to ITKsnap and 3Dslicer readable file formats.
 + `VTC_BOX.py`: Tool to quickly load the header information from a .vtc file, and draw a nifti bounding box based on it (usefull for manual segmenation - to see the bounds of your functional data).
 + `VMP_Cortical_depth.py`: Tool to sample VMP files in precreated cortical depths, outputting SMP files per depth per hemisphere.
++ `LabelMap_to_WMGM_LHRH.py`: Tool to convert labelmaps obtained from DNN (which are splitted rh+lh) and save them as two wmgm files - per hemisphere
 
 -------------------------------------------------------------------
 
