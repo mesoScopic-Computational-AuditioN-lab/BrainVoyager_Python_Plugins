@@ -13,6 +13,7 @@ List of available functions:
 + `VTC_BOX.py`: Tool to quickly load the header information from a .vtc file, and draw a nifti bounding box based on it (usefull for manual segmenation - to see the bounds of your functional data).
 + `VMP_Cortical_depth.py`: Tool to sample VMP files in precreated cortical depths, outputting SMP files per depth per hemisphere.
 + `LabelMap_to_WMGM_LHRH.py`: Tool to convert labelmaps obtained from DNN (which are splitted rh+lh) and save them as two wmgm files - per hemisphere
++ `Map_POI`: Tool to map POI from one reference frame to another using .ssm files, with the option to map one-to-one or one-to-many
 
 -------------------------------------------------------------------
 
