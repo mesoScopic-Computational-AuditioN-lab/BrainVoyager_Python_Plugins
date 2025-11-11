@@ -14,6 +14,7 @@ List of available functions:
 + `VMP_Cortical_depth.py`: Tool to sample VMP files in precreated cortical depths, outputting SMP files per depth per hemisphere.
 + `LabelMap_to_WMGM_LHRH.py`: Tool to convert labelmaps obtained from DNN (which are splitted rh+lh) and save them as two wmgm files - per hemisphere
 + `Map_POI`: Tool to map POI from one reference frame to another using .ssm files, with the option to map one-to-one or one-to-many
++ `BIDS_Structure_Generator.py` : Tool to automatically generate an empty BIDS-compliant folder hierarchy. Allows selection of parent directory, datatypes (anat, func, etc.), and number of subjects/sessions to quickly scaffold new datasets.
 
 -------------------------------------------------------------------
 
